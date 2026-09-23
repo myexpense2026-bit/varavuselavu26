@@ -87,7 +87,7 @@ const translations = {
     payCash: "பணம் (Cash)",
     payCard: "கார்டு (Card)",
     payBank: "வங்கி (Bank)"
-     Sbi: "Sbi credit card (Bank)",
+     SBI: "Sbi credit card (Bank)",
     HDFC: "Hdfc credit card  (Bank)"
   },
   en: {

@@ -71,7 +71,7 @@ const translations = {
     catFood: "உணவு & ஹோட்டல்",
     catRent: "வீட்டு வாடகை",
     catGroceries: "மளிகை பொருட்கள்",
-     catGroceries: "Vegetable",
+     Groceries: "Vegetable",
     catBills: "மின்சாரம் & ரீசார்ஜ்",
     catTravel: "பயணம் & பெட்ரோல்",
     catShopping: "ஷாப்பிங் & உடைகள்",
@@ -87,8 +87,8 @@ const translations = {
     payCash: "பணம் (Cash)",
     payCard: "கார்டு (Card)",
     payBank: "வங்கி (Bank)"
-     payBank: "Sbi credit card (Bank)",
-    payBank: "Hdfc credit card  (Bank)"
+     Sbi: "Sbi credit card (Bank)",
+    HDFC: "Hdfc credit card  (Bank)"
   },
   en: {
     appTitle: "Varavu Selavu",

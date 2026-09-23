@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>வரவு செலவு - Income & Expense Manager (Google Drive Edition)</title>
+  <!-- Google Fonts: Inter & Noto Sans Tamil -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons & Chart.js -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+/* ==========================================================================
+   Varavu Selavu - Embedded CSS Design System
+   ========================================================================== */
+
+:root {
+  --bg-primary: #090d16;
+  --bg-surface: #131b2e;
+  --bg-surface-elevated: #1e293b;
+  --bg-glass: rgba(19, 27, 46, 0.75);
+  
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-color-hover: rgba(255, 255, 255, 0.2);
+
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+
+  --accent-income: #10b981;
+  --accent-income-bg: rgba(16, 185, 129, 0.15);
+  --accent-expense: #f43f5e;
+  --accent-expense-bg: rgba(244, 63, 94, 0.15);
+  --accent-primary: #6366f1;
+  --accent-primary-hover: #4f46e5;
+  --accent-primary-bg: rgba(99, 102, 241, 0.15);
+
+  --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="light"] {
+  --bg-primary: #f1f5f9;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f8fafc;
+  --bg-glass: rgba(255, 255, 255, 0.85);
+
+  --border-color: rgba(0, 0, 0, 0.08);
+  --border-color-hover: rgba(0, 0, 0, 0.15);
+
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-subtle: #94a3b8;
+
+  --accent-income: #059669;
+  --accent-income-bg: rgba(5, 150, 105, 0.1);
+  --accent-expense: #e11d48;
+  --accent-expense-bg: rgba(225, 29, 72, 0.1);
+  --accent-primary: #4f46e5;
+  --accent-primary-hover: #4338ca;
+  --accent-primary-bg: rgba(79, 70, 229, 0.1);
+
+  --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Inter', 'Noto Sans Tamil', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  line-height: 1.5;
+  min-height: 100vh;
+  padding-bottom: 90px;
+  transition: background-color var(--transition-smooth), color var(--transition-smooth);
+}
+
+.app-container { max-width: 1000px; margin: 0 auto; padding: 16px; }
+
+.app-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px; background: var(--bg-glass);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+  margin-bottom: 16px; box-shadow: var(--glass-shadow);
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo-icon {
+  width: 44px; height: 44px; border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--accent-primary), #a855f7);
+  display: flex; align-items: center; justify-content: center; color: #ffffff;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+}
+.brand-text h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+.sub-title { font-size: 0.75rem; color: var(--text-muted); }
+.header-actions { display: flex; align-items: center; gap: 8px; }
+
+button { cursor: pointer; border: none; background: none; font-family: inherit; font-size: 0.9rem; font-weight: 500; transition: all var(--transition-fast); }
+.btn-icon { width: 40px; height: 40px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: var(--text-main); background: var(--bg-surface); border: 1px solid var(--border-color); }
+.btn-icon:hover { background: var(--bg-surface-elevated); border-color: var(--border-color-hover); }
+.btn-icon-sm { width: 32px; height: 32px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--text-main); background: var(--bg-surface); border: 1px solid var(--border-color); }
+.btn-icon-text { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: var(--radius-full); background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.85rem; font-weight: 600; }
+.btn-primary { background: linear-gradient(135deg, var(--accent-primary), var(--accent-primary-hover)); color: #ffffff; padding: 10px 20px; border-radius: var(--radius-md); font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4); }
+.btn-secondary { background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 16px; border-radius: var(--radius-md); font-weight: 500; display: inline-flex; align-items: center; gap: 8px; }
+.btn-secondary:hover { background: var(--bg-surface-elevated); }
+.btn-danger { background: var(--accent-expense-bg); color: var(--accent-expense); border: 1px solid rgba(244, 63, 94, 0.3); padding: 10px 20px; border-radius: var(--radius-md); font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+.btn-danger:hover { background: var(--accent-expense); color: #ffffff; }
+.btn-link { color: var(--accent-primary); font-weight: 600; font-size: 0.85rem; }
+.btn-link:hover { text-decoration: underline; }
+
+.month-selector-card { display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); border: 1px solid var(--border-color); padding: 10px 16px; border-radius: var(--radius-md); margin-bottom: 16px; box-shadow: var(--card-shadow); }
+.current-month-display { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1rem; color: var(--text-main); }
+.current-month-display i { color: var(--accent-primary); }
+
+.card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; box-shadow: var(--card-shadow); transition: border-color var(--transition-fast); }
+
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 16px; }
+.summary-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 18px 20px; box-shadow: var(--card-shadow); position: relative; overflow: hidden; }
+.summary-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+.balance-card::before { background: var(--accent-primary); }
+.income-card::before { background: var(--accent-income); }
+.expense-card::before { background: var(--accent-expense); }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.card-title { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+.icon-wrapper { width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; }
+.balance-icon { background: var(--accent-primary-bg); color: var(--accent-primary); }
+.income-icon { background: var(--accent-income-bg); color: var(--accent-income); }
+.expense-icon { background: var(--accent-expense-bg); color: var(--accent-expense); }
+.card-value { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+.card-footer { font-size: 0.8rem; color: var(--text-subtle); }
+.text-success { color: var(--accent-income); }
+.text-danger { color: var(--accent-expense); }
+
+.budget-section { padding: 16px 20px; }
+.budget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.section-title { font-size: 0.85rem; color: var(--text-muted); display: block; }
+.budget-amount-text { font-size: 1.1rem; font-weight: 700; }
+.progress-bar-bg { width: 100%; height: 10px; background: var(--bg-primary); border-radius: var(--radius-full); overflow: hidden; margin-bottom: 8px; }
+.progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-primary), #a855f7); border-radius: var(--radius-full); transition: width 0.5s ease-out; }
+.progress-bar-fill.warning { background: linear-gradient(90deg, #f59e0b, var(--accent-expense)); }
+.budget-footer { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); }
+
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } }
+.card-header-simple { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.card-header-simple h3 { font-size: 1rem; font-weight: 700; }
+.chart-container { position: relative; height: 220px; width: 100%; }
+.chart-container-large { position: relative; height: 280px; width: 100%; }
+
+.transactions-list { display: flex; flex-direction: column; gap: 10px; }
+.transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg-primary); border-radius: var(--radius-md); border: 1px solid var(--border-color); transition: transform var(--transition-fast); }
+.transaction-item:hover { transform: translateX(2px); }
+.trans-icon-title { display: flex; align-items: center; gap: 12px; }
+.trans-cat-icon { width: 38px; height: 38px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; background: var(--bg-surface-elevated); color: var(--text-main); flex-shrink: 0; }
+.trans-details { display: flex; flex-direction: column; }
+.trans-title-text { font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
+.trans-sub-text { font-size: 0.75rem; color: var(--text-muted); }
+.trans-amount-wrapper { text-align: right; }
+.trans-amount { font-size: 0.95rem; font-weight: 700; }
+.trans-badge { display: inline-block; font-size: 0.7rem; padding: 2px 6px; border-radius: var(--radius-sm); background: var(--bg-surface-elevated); color: var(--text-muted); margin-top: 2px; }
+
+.sheet-toolbar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; padding: 14px 16px; }
+.search-box { display: flex; align-items: center; gap: 8px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 8px 12px; flex: 1; min-width: 200px; }
+.search-box input { border: none; background: transparent; outline: none; color: var(--text-main); width: 100%; font-size: 0.85rem; }
+.filter-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+select { background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 8px 12px; font-size: 0.85rem; outline: none; }
+
+.sheet-container { padding: 0; overflow: hidden; }
+.table-responsive { width: 100%; overflow-x: auto; }
+.expense-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+.expense-table th { background: var(--bg-surface-elevated); padding: 12px 16px; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border-color); }
+.expense-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); }
+.expense-table tbody tr:hover { background: var(--bg-primary); }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.action-btns { display: flex; gap: 6px; justify-content: center; }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+
+.view-panel { display: none; }
+.view-panel.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+.analytics-grid, .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) { .analytics-grid, .settings-grid { grid-template-columns: 1fr; } }
+.settings-desc { font-size: 0.85rem; color: var(--text-muted); margin: 8px 0 16px 0; }
+.settings-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: var(--bg-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 100; padding: 0 8px; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 0.7rem; font-weight: 500; padding: 6px 12px; border-radius: var(--radius-md); }
+.nav-item i { width: 22px; height: 22px; }
+.nav-item.active { color: var(--accent-primary); }
+.fab-space { position: relative; top: -16px; }
+.nav-plus-circle { width: 48px; height: 48px; border-radius: var(--radius-full); background: linear-gradient(135deg, var(--accent-primary), #a855f7); display: flex; align-items: center; justify-content: center; color: #ffffff; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.5); }
+.fab-btn { display: none; }
+
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+.modal-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); width: 100%; max-width: 480px; padding: 24px; box-shadow: var(--glass-shadow); transform: translateY(20px); transition: transform var(--transition-fast); }
+.modal-overlay.active .modal-card { transform: translateY(0); }
+.modal-card.modal-sm { max-width: 360px; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-header h3 { font-size: 1.1rem; font-weight: 700; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+input[type="text"], input[type="number"], input[type="date"], select { width: 100%; padding: 10px 14px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-main); font-family: inherit; font-size: 0.9rem; outline: none; }
+input:focus, select:focus { border-color: var(--accent-primary); box-shadow: 0 0 0 3px var(--accent-primary-bg); }
+.amount-input-wrapper { position: relative; display: flex; align-items: center; }
+.currency-symbol { position: absolute; left: 14px; font-size: 1.2rem; font-weight: 700; color: var(--accent-primary); }
+.amount-input-wrapper input { padding-left: 36px; font-size: 1.25rem; font-weight: 700; }
+.type-toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.type-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-muted); font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+.type-btn input { display: none; }
+.type-btn.expense-active { background: var(--accent-expense-bg); border-color: var(--accent-expense); color: var(--accent-expense); }
+.type-btn.income-active { background: var(--accent-income-bg); border-color: var(--accent-income); color: var(--accent-income); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+.hidden { display: none !important; }
+
+/* Google Drive Sync Banner */
+.drive-banner {
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.drive-banner-text {
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+.drive-banner-text strong {
+  color: var(--accent-primary);
+}
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Google Drive Banner -->
+    <div class="drive-banner">
+      <div class="drive-banner-text">
+        <i data-lucide="cloud" style="vertical-align: middle; margin-right: 6px;"></i>
+        <strong>Google Drive Edition:</strong> உங்கள் கணக்கு பேக்அப் கோப்பை கூகுள் டிரைவில் சேமித்து மொபைல் & மேக்புக்கில் இயக்கலாம்.
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">
+          <i data-lucide="wallet"></i>
+        </div>
+        <div class="brand-text">
+          <h1 id="app-title">வரவு செலவு</h1>
+          <span class="sub-title" id="app-subtitle">தினசரி கணக்கு மேலாண்மை</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="lang-toggle-btn" class="btn-icon-text" title="Change Language">
+          <i data-lucide="languages"></i>
+          <span id="lang-label">EN</span>
+        </button>
+        <button id="theme-toggle-btn" class="btn-icon" title="Toggle Theme">
+          <i data-lucide="moon" id="theme-icon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Top Filters / Month Picker -->
+      <section class="month-selector-card">
+        <button id="prev-month" class="btn-icon-sm"><i data-lucide="chevron-left"></i></button>
+        <div class="current-month-display">
+          <i data-lucide="calendar"></i>
+          <span id="selected-month-label">செப்டம்பர் 2026</span>
+        </div>
+        <button id="next-month" class="btn-icon-sm"><i data-lucide="chevron-right"></i></button>
+      </section>
+
+      <!-- View: Dashboard -->
+      <div id="view-dashboard" class="view-panel active">
+        <!-- Summary Cards -->
+        <section class="summary-grid">
+          <div class="summary-card balance-card">
+            <div class="card-header">
+              <span class="card-title" data-i18n="netBalance">மீதி இருப்பு</span>
+              <div class="icon-wrapper balance-icon"><i data-lucide="scale"></i></div>
+            </div>
+            <div class="card-value" id="total-balance">₹0</div>
+            <div class="card-footer" id="balance-status-text">பாதுகாப்பான இருப்பு</div>
+          </div>
+
+          <div class="summary-card income-card">
+            <div class="card-header">
+              <span class="card-title" data-i18n="totalIncome">மொத்த வரவு</span>
+              <div class="icon-wrapper income-icon"><i data-lucide="arrow-down-left"></i></div>
+            </div>
+            <div class="card-value text-success" id="total-income">₹0</div>
+            <div class="card-footer" id="income-count">0 பதிவுகள்</div>
+          </div>
+
+          <div class="summary-card expense-card">
+            <div class="card-header">
+              <span class="card-title" data-i18n="totalExpense">மொத்த செலவு</span>
+              <div class="icon-wrapper expense-icon"><i data-lucide="arrow-up-right"></i></div>
+            </div>
+            <div class="card-value text-danger" id="total-expense">₹0</div>
+            <div class="card-footer" id="expense-count">0 பதிவுகள்</div>
+          </div>
+        </section>
+
+        <!-- Budget Bar -->
+        <section class="budget-section card">
+          <div class="budget-header">
+            <div>
+              <span class="section-title" data-i18n="monthlyBudget">மாதாந்திர பட்ஜெட் வரம்பு</span>
+              <span class="budget-amount-text" id="budget-display">₹30,000</span>
+            </div>
+            <button id="edit-budget-btn" class="btn-link" data-i18n="edit">மாற்று</button>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="budget-progress-fill"></div>
+          </div>
+          <div class="budget-footer">
+            <span id="budget-percent">0% பயன்படுத்தப்பட்டது</span>
+            <span id="budget-remaining">மீதம்: ₹30,000</span>
+          </div>
+        </section>
+
+        <!-- Analytics Overview & Recent Transactions -->
+        <div class="dashboard-grid">
+          <section class="chart-card card">
+            <div class="card-header-simple">
+              <h3 data-i18n="categoryBreakdown">செலவு வகைகள்</h3>
+            </div>
+            <div class="chart-container">
+              <canvas id="category-pie-chart"></canvas>
+            </div>
+          </section>
+
+          <section class="recent-transactions-card card">
+            <div class="card-header-simple">
+              <h3 data-i18n="recentTransactions">சமீபத்திய பதிவுகள்</h3>
+              <button id="see-all-btn" class="btn-link" data-i18n="viewAll">அனைத்தும் பார்க்க</button>
+            </div>
+            <div class="transactions-list" id="recent-transactions-list">
+              <!-- JS Populated -->
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- View: Transactions / Sheet View -->
+      <div id="view-transactions" class="view-panel">
+        <section class="sheet-toolbar card">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="search-input" placeholder="தேடுக (உணவு, GPay, சம்பளம்...)" data-i18n-placeholder="searchPlaceholder">
+          </div>
+          <div class="filter-group">
+            <select id="filter-type">
+              <option value="all" data-i18n="allTypes">அனைத்து கணக்கும்</option>
+              <option value="income" data-i18n="incomeOnly">வரவு மட்டும்</option>
+              <option value="expense" data-i18n="expenseOnly">செலவு மட்டும்</option>
+            </select>
+            <select id="filter-category">
+              <option value="all" data-i18n="allCategories">அனைத்து வகைகள்</option>
+            </select>
+            <button id="gpay-import-btn" class="btn-primary" style="background: linear-gradient(135deg, #4285F4, #34A853);">
+              <i data-lucide="zap"></i>
+              <span>GPay Import</span>
+            </button>
+            <button id="export-excel-btn" class="btn-secondary">
+              <i data-lucide="file-spreadsheet"></i>
+              <span data-i18n="exportExcel">Excel Download</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="sheet-container card">
+          <div class="table-responsive">
+            <table class="expense-table" id="transactions-table">
+              <thead>
+                <tr>
+                  <th data-i18n="colDate">தேதி</th>
+                  <th data-i18n="colCategory">வகை</th>
+                  <th data-i18n="colNote">விவரம் / குறிப்பு</th>
+                  <th data-i18n="colPayment">கட்டண முறை</th>
+                  <th data-i18n="colType">வகைமை</th>
+                  <th class="text-right" data-i18n="colAmount">தொகை (₹)</th>
+                  <th class="text-center" data-i18n="colAction">செயல்</th>
+                </tr>
+              </thead>
+              <tbody id="table-body">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+          <div id="empty-state" class="empty-state hidden">
+            <i data-lucide="inbox"></i>
+            <p data-i18n="noTransactionsFound">பதிவுகள் எதுவும் காணப்படவில்லை</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- View: Analytics -->
+      <div id="view-analytics" class="view-panel">
+        <div class="analytics-grid">
+          <section class="card">
+            <h3 data-i18n="monthlyComparison">வரவு vs செலவு (ஒப்பீடு)</h3>
+            <div class="chart-container-large">
+              <canvas id="monthly-bar-chart"></canvas>
+            </div>
+          </section>
+          <section class="card">
+            <h3 data-i18n="paymentMethods">கட்டண முறை பகுப்பாய்வு</h3>
+            <div class="chart-container-large">
+              <canvas id="payment-doughnut-chart"></canvas>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- View: Backup & Settings -->
+      <div id="view-settings" class="view-panel">
+        <div class="settings-grid">
+          <section class="card">
+            <h3 data-i18n="backupTitle">கூகுள் டிரைவ் & பேக்அப்</h3>
+            <p class="settings-desc" data-i18n="backupDesc">உங்கள் வரவு-செலவு பதிவுகளை Google Drive-ல் சேமித்து மேக்புக்/மொபைல் இடையே மாற்றிக் கொள்ளவும்.</p>
+            <div class="settings-actions">
+              <button id="backup-download-btn" class="btn-primary">
+                <i data-lucide="download"></i>
+                <span data-i18n="downloadBackup">JSON Backup Download</span>
+              </button>
+              <label for="restore-file-input" class="btn-secondary">
+                <i data-lucide="upload"></i>
+                <span data-i18n="restoreBackup">Restore Backup File</span>
+              </label>
+              <input type="file" id="restore-file-input" accept=".json" class="hidden">
+            </div>
+          </section>
+
+          <section class="card">
+            <h3 data-i18n="dangerZone">தரவு அழிப்பு</h3>
+            <p class="settings-desc" data-i18n="dangerDesc">அனைத்து வரவு செலவு பதிவுகளையும் நிரந்தரமாக அழிக்க விரும்பினால் மட்டும் பயன்படுத்தவும்.</p>
+            <button id="clear-all-data-btn" class="btn-danger">
+              <i data-lucide="trash-2"></i>
+              <span data-i18n="clearAllData">அனைத்து தகவலையும் அழி</span>
+            </button>
+          </section>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- FAB Add Button for Mobile -->
+    <button id="fab-add-btn" class="fab-btn" title="Add Transaction">
+      <i data-lucide="plus"></i>
+    </button>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-target="view-dashboard">
+        <i data-lucide="layout-dashboard"></i>
+        <span data-i18n="navDashboard">முகப்பு</span>
+      </button>
+      <button class="nav-item" data-target="view-transactions">
+        <i data-lucide="receipt"></i>
+        <span data-i18n="navSheet">கணக்கு ஷீட்</span>
+      </button>
+      <button class="nav-item fab-space" id="add-nav-trigger">
+        <div class="nav-plus-circle"><i data-lucide="plus"></i></div>
+        <span data-i18n="navAdd">சேர்க்க</span>
+      </button>
+      <button class="nav-item" data-target="view-analytics">
+        <i data-lucide="pie-chart"></i>
+        <span data-i18n="navAnalytics">அறிக்கை</span>
+      </button>
+      <button class="nav-item" data-target="view-settings">
+        <i data-lucide="settings"></i>
+        <span data-i18n="navSettings">அமைப்புகள்</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Modal: Add / Edit Transaction -->
+  <div id="transaction-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title" data-i18n="addTransaction">புதிய வரவு / செலவு சேர்க்க</h3>
+        <button class="btn-icon-sm close-modal-btn"><i data-lucide="x"></i></button>
+      </div>
+      <form id="transaction-form">
+        <input type="hidden" id="edit-id" value="">
+        
+        <!-- Type Selection Toggle -->
+        <div class="type-toggle-group">
+          <label class="type-btn expense-active" id="type-label-expense">
+            <input type="radio" name="trans-type" value="expense" checked>
+            <i data-lucide="arrow-up-right"></i>
+            <span data-i18n="typeExpense">செலவு (Expense)</span>
+          </label>
+          <label class="type-btn" id="type-label-income">
+            <input type="radio" name="trans-type" value="income">
+            <i data-lucide="arrow-down-left"></i>
+            <span data-i18n="typeIncome">வரவு (Income)</span>
+          </label>
+        </div>
+
+        <!-- Amount -->
+        <div class="form-group">
+          <label for="trans-amount" data-i18n="labelAmount">தொகை (₹)</label>
+          <div class="amount-input-wrapper">
+            <span class="currency-symbol">₹</span>
+            <input type="number" id="trans-amount" step="any" placeholder="0.00" required autofocus>
+          </div>
+        </div>
+
+        <!-- Date & Category -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="trans-date" data-i18n="labelDate">தேதி</label>
+            <input type="date" id="trans-date" required>
+          </div>
+          <div class="form-group">
+            <label for="trans-category" data-i18n="labelCategory">வகை</label>
+            <select id="trans-category" required>
+              <!-- Populated by JS -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Payment Method & Note -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="trans-payment" data-i18n="labelPayment">கட்டண முறை</label>
+            <select id="trans-payment">
+              <option value="gpay">GPay / PhonePe / UPI</option>
+              <option value="cash">பணம் (Cash)</option>
+              <option value="card">ATM Card / Credit Card</option>
+              <option value="bank">வங்கிப் பரிமாற்றம் (Bank)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="trans-note" data-i18n="labelNote">விவரம் / குறிப்பு (விருப்பப்பட்டால்)</label>
+          <input type="text" id="trans-note" placeholder="எ.கா. காய்கறி வாங்கினது, வீட்டு வாடகை..." data-i18n-placeholder="notePlaceholder">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary close-modal-btn" data-i18n="btnCancel">ரத்து செய்</button>
+          <button type="submit" class="btn-primary" data-i18n="btnSave">சேமிக்கவும்</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Budget Setting -->
+  <div id="budget-modal" class="modal-overlay">
+    <div class="modal-card modal-sm">
+      <div class="modal-header">
+        <h3 data-i18n="setBudgetTitle">மாதாந்திர பட்ஜெட் நிர்ணயம்</h3>
+        <button class="btn-icon-sm close-budget-modal-btn"><i data-lucide="x"></i></button>
+      </div>
+      <form id="budget-form">
+        <div class="form-group">
+          <label for="budget-input" data-i18n="budgetAmountLabel">மாதாந்திர இலக்கு தொகை (₹)</label>
+          <div class="amount-input-wrapper">
+            <span class="currency-symbol">₹</span>
+            <input type="number" id="budget-input" min="0" required placeholder="30000">
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary close-budget-modal-btn" data-i18n="btnCancel">ரத்து செய்</button>
+          <button type="submit" class="btn-primary" data-i18n="btnSave">சேமிக்கவும்</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: GPay Auto Import -->
+  <div id="gpay-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="zap" style="color: #4285F4;"></i>
+          <span>GPay / UPI தானியங்கி இறக்குமதி (Auto Import)</span>
+        </h3>
+        <button class="btn-icon-sm close-gpay-modal-btn"><i data-lucide="x"></i></button>
+      </div>
+      <div class="form-group">
+        <label for="gpay-text-input">GPay மேசேஜ் / SMS / அறிக்கையை இங்கே ஒட்டவும் (Paste GPay SMS / Text):</label>
+        <textarea id="gpay-text-input" rows="6" style="width:100%; padding:12px; background:var(--bg-primary); color:var(--text-main); border:1px solid var(--border-color); border-radius:var(--radius-md); font-family:inherit; font-size:0.85rem;" placeholder="உதாரணம்:
+Paid ₹450 to Swiggy on 05 Sep 2026
+Received ₹15,000 from Kumar on 04 Sep 2026
+Paid ₹1,450 to TANGEDCO EB
+Sent ₹1,200 to HP PETROL PUMP"></textarea>
+      </div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 16px;">
+        💡 <strong>குறிப்பு:</strong> GPay அல்லது வங்கி SMS வரிகளை அப்படியே ஒட்டினால், செயலி தொகையும் வகையும் தானாகக் கண்டறிந்து அட்டவணையில் சேர்த்துவிடும்!
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary close-gpay-modal-btn">ரத்து செய்</button>
+        <button type="button" id="process-gpay-btn" class="btn-primary" style="background: linear-gradient(135deg, #4285F4, #34A853);">
+          <i data-lucide="check-circle"></i>
+          <span>தானாகக் கணக்கில் சேர் (Auto Add)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

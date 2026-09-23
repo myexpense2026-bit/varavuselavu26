@@ -1,0 +1,22 @@
+{
+  "name": "வரவு செலவு - Income & Expense Tracker",
+  "short_name": "வரவு செலவு",
+  "description": "தினசரி மற்றும் மாதாந்திர வரவு-செலவு கணக்கு மேலாண்மை செயலி",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2489/2489756.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2489/2489756.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

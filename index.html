@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>வரவு செலவு - Income & Expense Manager</title>
+  <!-- Google Fonts: Inter & Noto Sans Tamil -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons & Chart.js -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <!-- PWA & Mobile Home Screen Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="வரவு செலவு">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2489/2489756.png">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">
+          <i data-lucide="wallet"></i>
+        </div>
+        <div class="brand-text">
+          <h1 id="app-title">வரவு செலவு</h1>
+          <span class="sub-title" id="app-subtitle">தினசரி கணக்கு மேலாண்மை</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="lang-toggle-btn" class="btn-icon-text" title="Change Language">
+          <i data-lucide="languages"></i>
+          <span id="lang-label">EN</span>
+        </button>
+        <button id="theme-toggle-btn" class="btn-icon" title="Toggle Theme">
+          <i data-lucide="moon" id="theme-icon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Top Filters / Month Picker -->
+      <section class="month-selector-card">
+        <button id="prev-month" class="btn-icon-sm"><i data-lucide="chevron-left"></i></button>
+        <div class="current-month-display">
+          <i data-lucide="calendar"></i>
+          <span id="selected-month-label">செப்டம்பர் 2026</span>
+        </div>
+        <button id="next-month" class="btn-icon-sm"><i data-lucide="chevron-right"></i></button>
+      </section>
+
+      <!-- View: Dashboard -->
+      <div id="view-dashboard" class="view-panel active">
+        <!-- Summary Cards -->
+        <section class="summary-grid">
+          <div class="summary-card balance-card">
+            <div class="card-header">
+              <span class="card-title" data-i18n="netBalance">மீதி இருப்பு</span>
+              <div class="icon-wrapper balance-icon"><i data-lucide="scale"></i></div>
+            </div>
+            <div class="card-value" id="total-balance">₹0</div>
+            <div class="card-footer" id="balance-status-text">பாதுகாப்பான இருப்பு</div>
+          </div>
+
+          <div class="summary-card income-card">
+            <div class="card-header">
+              <span class="card-title" data-i18n="totalIncome">மொத்த வரவு</span>
+              <div class="icon-wrapper income-icon"><i data-lucide="arrow-down-left"></i></div>
+            </div>
+            <div class="card-value text-success" id="total-income">₹0</div>
+            <div class="card-footer" id="income-count">0 பதிவுகள்</div>
+          </div>
+
+          <div class="summary-card expense-card">
+            <div class="card-header">
+              <span class="card-title" data-i18n="totalExpense">மொத்த செலவு</span>
+              <div class="icon-wrapper expense-icon"><i data-lucide="arrow-up-right"></i></div>
+            </div>
+            <div class="card-value text-danger" id="total-expense">₹0</div>
+            <div class="card-footer" id="expense-count">0 பதிவுகள்</div>
+          </div>
+        </section>
+
+        <!-- Budget Bar -->
+        <section class="budget-section card">
+          <div class="budget-header">
+            <div>
+              <span class="section-title" data-i18n="monthlyBudget">மாதாந்திர பட்ஜெட் வரம்பு</span>
+              <span class="budget-amount-text" id="budget-display">₹30,000</span>
+            </div>
+            <button id="edit-budget-btn" class="btn-link" data-i18n="edit">மாற்று</button>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="budget-progress-fill"></div>
+          </div>
+          <div class="budget-footer">
+            <span id="budget-percent">0% பயன்படுத்தப்பட்டது</span>
+            <span id="budget-remaining">மீதம்: ₹30,000</span>
+          </div>
+        </section>
+
+        <!-- Analytics Overview & Recent Transactions -->
+        <div class="dashboard-grid">
+          <section class="chart-card card">
+            <div class="card-header-simple">
+              <h3 data-i18n="categoryBreakdown">செலவு வகைகள்</h3>
+            </div>
+            <div class="chart-container">
+              <canvas id="category-pie-chart"></canvas>
+            </div>
+          </section>
+
+          <section class="recent-transactions-card card">
+            <div class="card-header-simple">
+              <h3 data-i18n="recentTransactions">சமீபத்திய பதிவுகள்</h3>
+              <button id="see-all-btn" class="btn-link" data-i18n="viewAll">அனைத்தும் பார்க்க</button>
+            </div>
+            <div class="transactions-list" id="recent-transactions-list">
+              <!-- JS Populated -->
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- View: Transactions / Sheet View -->
+      <div id="view-transactions" class="view-panel">
+        <section class="sheet-toolbar card">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="search-input" placeholder="தேடுக (உணவு, GPay, சம்பளம்...)" data-i18n-placeholder="searchPlaceholder">
+          </div>
+          <div class="filter-group">
+            <select id="filter-type">
+              <option value="all" data-i18n="allTypes">அனைத்து கணக்கும்</option>
+              <option value="income" data-i18n="incomeOnly">வரவு மட்டும்</option>
+              <option value="expense" data-i18n="expenseOnly">செலவு மட்டும்</option>
+            </select>
+            <select id="filter-category">
+              <option value="all" data-i18n="allCategories">அனைத்து வகைகள்</option>
+            </select>
+            <button id="gpay-import-btn" class="btn-primary" style="background: linear-gradient(135deg, #4285F4, #34A853);">
+              <i data-lucide="zap"></i>
+              <span>GPay Import</span>
+            </button>
+            <button id="export-excel-btn" class="btn-secondary">
+              <i data-lucide="file-spreadsheet"></i>
+              <span data-i18n="exportExcel">Excel Download</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="sheet-container card">
+          <div class="table-responsive">
+            <table class="expense-table" id="transactions-table">
+              <thead>
+                <tr>
+                  <th data-i18n="colDate">தேதி</th>
+                  <th data-i18n="colCategory">வகை</th>
+                  <th data-i18n="colNote">விவரம் / குறிப்பு</th>
+                  <th data-i18n="colPayment">கட்டண முறை</th>
+                  <th data-i18n="colType">வகைமை</th>
+                  <th class="text-right" data-i18n="colAmount">தொகை (₹)</th>
+                  <th class="text-center" data-i18n="colAction">செயல்</th>
+                </tr>
+              </thead>
+              <tbody id="table-body">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+          <div id="empty-state" class="empty-state hidden">
+            <i data-lucide="inbox"></i>
+            <p data-i18n="noTransactionsFound">பதிவுகள் எதுவும் காணப்படவில்லை</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- View: Analytics -->
+      <div id="view-analytics" class="view-panel">
+        <div class="analytics-grid">
+          <section class="card">
+            <h3 data-i18n="monthlyComparison">வரவு vs செலவு (ஒப்பீடு)</h3>
+            <div class="chart-container-large">
+              <canvas id="monthly-bar-chart"></canvas>
+            </div>
+          </section>
+          <section class="card">
+            <h3 data-i18n="paymentMethods">கட்டண முறை பகுப்பாய்வு</h3>
+            <div class="chart-container-large">
+              <canvas id="payment-doughnut-chart"></canvas>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- View: Backup & Settings -->
+      <div id="view-settings" class="view-panel">
+        <div class="settings-grid">
+          <section class="card">
+            <h3 data-i18n="backupTitle">தரவு பேக்அப் & மீட்டமைப்பு</h3>
+            <p class="settings-desc" data-i18n="backupDesc">உங்கள் வரவு-செலவு பதிவுகளை பத்திரமாக பேக்அப் எடுத்துக்கொள்ளலாம்.</p>
+            <div class="settings-actions">
+              <button id="backup-download-btn" class="btn-primary">
+                <i data-lucide="download"></i>
+                <span data-i18n="downloadBackup">JSON Backup Download</span>
+              </button>
+              <label for="restore-file-input" class="btn-secondary">
+                <i data-lucide="upload"></i>
+                <span data-i18n="restoreBackup">Restore Backup</span>
+              </label>
+              <input type="file" id="restore-file-input" accept=".json" class="hidden">
+            </div>
+          </section>
+
+          <section class="card">
+            <h3 data-i18n="dangerZone">தரவு அழிப்பு</h3>
+            <p class="settings-desc" data-i18n="dangerDesc">அனைத்து வரவு செலவு பதிவுகளையும் நிரந்தரமாக அழிக்க விரும்பினால் மட்டும் பயன்படுத்தவும்.</p>
+            <button id="clear-all-data-btn" class="btn-danger">
+              <i data-lucide="trash-2"></i>
+              <span data-i18n="clearAllData">அனைத்து தகவலையும் அழி</span>
+            </button>
+          </section>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- FAB Add Button for Mobile -->
+    <button id="fab-add-btn" class="fab-btn" title="Add Transaction">
+      <i data-lucide="plus"></i>
+    </button>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-target="view-dashboard">
+        <i data-lucide="layout-dashboard"></i>
+        <span data-i18n="navDashboard">முகப்பு</span>
+      </button>
+      <button class="nav-item" data-target="view-transactions">
+        <i data-lucide="receipt"></i>
+        <span data-i18n="navSheet">கணக்கு ஷீட்</span>
+      </button>
+      <button class="nav-item fab-space" id="add-nav-trigger">
+        <div class="nav-plus-circle"><i data-lucide="plus"></i></div>
+        <span data-i18n="navAdd">சேர்க்க</span>
+      </button>
+      <button class="nav-item" data-target="view-analytics">
+        <i data-lucide="pie-chart"></i>
+        <span data-i18n="navAnalytics">அறிக்கை</span>
+      </button>
+      <button class="nav-item" data-target="view-settings">
+        <i data-lucide="settings"></i>
+        <span data-i18n="navSettings">அமைப்புகள்</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Modal: Add / Edit Transaction -->
+  <div id="transaction-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title" data-i18n="addTransaction">புதிய வரவு / செலவு சேர்க்க</h3>
+        <button class="btn-icon-sm close-modal-btn"><i data-lucide="x"></i></button>
+      </div>
+      <form id="transaction-form">
+        <input type="hidden" id="edit-id" value="">
+        
+        <!-- Type Selection Toggle -->
+        <div class="type-toggle-group">
+          <label class="type-btn expense-active" id="type-label-expense">
+            <input type="radio" name="trans-type" value="expense" checked>
+            <i data-lucide="arrow-up-right"></i>
+            <span data-i18n="typeExpense">செலவு (Expense)</span>
+          </label>
+          <label class="type-btn" id="type-label-income">
+            <input type="radio" name="trans-type" value="income">
+            <i data-lucide="arrow-down-left"></i>
+            <span data-i18n="typeIncome">வரவு (Income)</span>
+          </label>
+        </div>
+
+        <!-- Amount -->
+        <div class="form-group">
+          <label for="trans-amount" data-i18n="labelAmount">தொகை (₹)</label>
+          <div class="amount-input-wrapper">
+            <span class="currency-symbol">₹</span>
+            <input type="number" id="trans-amount" step="any" placeholder="0.00" required autofocus>
+          </div>
+        </div>
+
+        <!-- Date & Category -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="trans-date" data-i18n="labelDate">தேதி</label>
+            <input type="date" id="trans-date" required>
+          </div>
+          <div class="form-group">
+            <label for="trans-category" data-i18n="labelCategory">வகை</label>
+            <select id="trans-category" required>
+              <!-- Populated by JS -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Payment Method & Note -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="trans-payment" data-i18n="labelPayment">கட்டண முறை</label>
+            <select id="trans-payment">
+              <option value="gpay">GPay / PhonePe / UPI</option>
+              <option value="cash">பணம் (Cash)</option>
+              <option value="card">ATM Card / Credit Card</option>
+              <option value="bank">வங்கிப் பரிமாற்றம் (Bank)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="trans-note" data-i18n="labelNote">விவரம் / குறிப்பு (விருப்பப்பட்டால்)</label>
+          <input type="text" id="trans-note" placeholder="எ.கா. காய்கறி வாங்கினது, வீட்டு வாடகை..." data-i18n-placeholder="notePlaceholder">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary close-modal-btn" data-i18n="btnCancel">ரத்து செய்</button>
+          <button type="submit" class="btn-primary" data-i18n="btnSave">சேமிக்கவும்</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Budget Setting -->
+  <div id="budget-modal" class="modal-overlay">
+    <div class="modal-card modal-sm">
+      <div class="modal-header">
+        <h3 data-i18n="setBudgetTitle">மாதாந்திர பட்ஜெட் நிர்ணயம்</h3>
+        <button class="btn-icon-sm close-budget-modal-btn"><i data-lucide="x"></i></button>
+      </div>
+      <form id="budget-form">
+        <div class="form-group">
+          <label for="budget-input" data-i18n="budgetAmountLabel">மாதாந்திர இலக்கு தொகை (₹)</label>
+          <div class="amount-input-wrapper">
+            <span class="currency-symbol">₹</span>
+            <input type="number" id="budget-input" min="0" required placeholder="30000">
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary close-budget-modal-btn" data-i18n="btnCancel">ரத்து செய்</button>
+          <button type="submit" class="btn-primary" data-i18n="btnSave">சேமிக்கவும்</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: GPay Auto Import -->
+  <div id="gpay-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="zap" style="color: #4285F4;"></i>
+          <span>GPay / UPI தானியங்கி இறக்குமதி (Auto Import)</span>
+        </h3>
+        <button class="btn-icon-sm close-gpay-modal-btn"><i data-lucide="x"></i></button>
+      </div>
+      <div class="form-group">
+        <label for="gpay-text-input">GPay மேசேஜ் / SMS / அறிக்கையை இங்கே ஒட்டவும் (Paste GPay SMS / Text):</label>
+        <textarea id="gpay-text-input" rows="6" style="width:100%; padding:12px; background:var(--bg-primary); color:var(--text-main); border:1px solid var(--border-color); border-radius:var(--radius-md); font-family:inherit; font-size:0.85rem;" placeholder="உதாரணம்:
+Paid ₹450 to Swiggy on 05 Sep 2026
+Received ₹15,000 from Kumar on 04 Sep 2026
+Paid ₹1,450 to TANGEDCO EB
+Sent ₹1,200 to HP PETROL PUMP"></textarea>
+      </div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 16px;">
+        💡 <strong>குறிப்பு:</strong> GPay அல்லது வங்கி SMS வரிகளை அப்படியே ஒட்டினால், செயலி தொகையும் வகையும் தானாகக் கண்டறிந்து அட்டவணையில் சேர்த்துவிடும்!
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary close-gpay-modal-btn">ரத்து செய்</button>
+        <button type="button" id="process-gpay-btn" class="btn-primary" style="background: linear-gradient(135deg, #4285F4, #34A853);">
+          <i data-lucide="check-circle"></i>
+          <span>தானாகக் கணக்கில் சேர் (Auto Add)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
